@@ -220,6 +220,10 @@
 
         async function callWithBytes(name, returnType, extraTypes = [], extraValues = []) {
             if (!wasm) throw new Error('WASM module not loaded');
+            if (typeof wasm.ccall !== 'function') {
+                console.error('WASM module does not have ccall. Module:', wasm);
+                throw new Error('WASM module interface error: ccall not found');
+            }
             const pointer = wasm._malloc(selectedBytes.length);
             try {
                 wasm.HEAPU8.set(selectedBytes, pointer);
@@ -230,26 +234,34 @@
         }
 
         async function loadFile(file) {
-            if (!file || !wasm) return;
+            if (!file || !wasm) {
+                console.warn('loadFile: wasm not available yet');
+                return;
+            }
             clearStatus();
             selectedFile = file;
             selectedBytes = new Uint8Array(await file.arrayBuffer());
-            const raw = await callWithBytes('umacro_inspect', 'string');
-            if (!raw) {
-                showStatus(wasmError(), 'error');
-                return;
-            }
+            try {
+                const raw = await callWithBytes('umacro_inspect', 'string');
+                if (!raw) {
+                    showStatus(wasmError(), 'error');
+                    return;
+                }
 
-            const info = JSON.parse(raw);
-            elements.fileName.textContent = file.name;
-            elements.fileSize.textContent = humanSize(file.size);
-            elements.statFormat.textContent = info.formatName;
-            elements.statFps.textContent = `${Number(info.framerate).toLocaleString('en-US')} FPS`;
-            elements.statInputs.textContent = Number(info.inputs).toLocaleString('en-US');
-            elements.statDuration.textContent = `${Number(info.duration).toFixed(2)} s`;
-            elements.outputName.value = `${baseName(file.name)}.${extensionFor(elements.formatSelect.value)}`;
-            elements.dropzone.hidden = true;
-            elements.workspace.classList.add('visible');
+                const info = JSON.parse(raw);
+                elements.fileName.textContent = file.name;
+                elements.fileSize.textContent = humanSize(file.size);
+                elements.statFormat.textContent = info.formatName;
+                elements.statFps.textContent = `${Number(info.framerate).toLocaleString('en-US')} FPS`;
+                elements.statInputs.textContent = Number(info.inputs).toLocaleString('en-US');
+                elements.statDuration.textContent = `${Number(info.duration).toFixed(2)} s`;
+                elements.outputName.value = `${baseName(file.name)}.${extensionFor(elements.formatSelect.value)}`;
+                elements.dropzone.hidden = true;
+                elements.workspace.classList.add('visible');
+            } catch (error) {
+                console.error('Error loading file:', error);
+                showStatus('Error loading file: ' + error.message, 'error');
+            }
         }
 
         function chooseFile() { elements.fileInput.click(); }
@@ -280,6 +292,7 @@
                 URL.revokeObjectURL(url);
                 showStatus(`Conversion complete · ${humanSize(size)}`, 'success');
             } catch (error) {
+                console.error('Conversion error:', error);
                 showStatus(error.message, 'error');
             } finally {
                 elements.convertButton.disabled = false;
@@ -290,6 +303,9 @@
         const pageUrl = new URL(window.location.href);
         const baseUrl = pageUrl.origin + pageUrl.pathname.split('/').slice(0, -1).join('/');
         
+        console.log('Initializing WASM module...');
+        console.log('Base URL:', baseUrl);
+        
         createUniversalMacro({ 
             locateFile: path => {
                 const url = baseUrl + '/' + path;
@@ -297,22 +313,38 @@
                 return url;
             }
         }).then(module => {
-            console.log('WASM module loaded successfully');
+            console.log('WASM module object received:', module);
+            console.log('Module type:', typeof module);
+            console.log('Module keys:', Object.keys(module).slice(0, 20));
+            
+            if (!module || typeof module.ccall !== 'function') {
+                console.error('Module does not expose ccall interface');
+                showStatus('WASM module loaded but interface is incorrect', 'error');
+                return;
+            }
+            
             wasm = module;
-            formats = JSON.parse(wasm.ccall('umacro_formats', 'string', [], []));
-            formats.filter(format => format.exportable).forEach(format => {
-                const option = document.createElement('option');
-                option.value = format.id;
-                option.textContent = `${format.name} (${format.extensions[0]})`;
-                elements.formatSelect.appendChild(option);
-            });
+            console.log('WASM module loaded successfully');
+            
+            try {
+                formats = JSON.parse(wasm.ccall('umacro_formats', 'string', [], []));
+                formats.filter(format => format.exportable).forEach(format => {
+                    const option = document.createElement('option');
+                    option.value = format.id;
+                    option.textContent = `${format.name} (${format.extensions[0]})`;
+                    elements.formatSelect.appendChild(option);
+                });
 
-            formats.forEach(format => {
-                const chip = document.createElement('div');
-                chip.className = 'chip';
-                chip.textContent = format.name;
-                elements.formatChips.appendChild(chip);
-            });
+                formats.forEach(format => {
+                    const chip = document.createElement('div');
+                    chip.className = 'chip';
+                    chip.textContent = format.name;
+                    elements.formatChips.appendChild(chip);
+                });
+            } catch (error) {
+                console.error('Error loading formats:', error);
+                showStatus('Error loading formats: ' + error.message, 'error');
+            }
         }).catch(error => {
             console.error('Failed to load WASM module:', error);
             showStatus('Failed to load converter module: ' + error.message, 'error');
