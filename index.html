@@ -220,10 +220,7 @@
 
         async function callWithBytes(name, returnType, extraTypes = [], extraValues = []) {
             if (!wasm) throw new Error('WASM module not loaded');
-            if (typeof wasm.ccall !== 'function') {
-                console.error('WASM module does not have ccall. Module:', wasm);
-                throw new Error('WASM module interface error: ccall not found');
-            }
+            if (!wasm.HEAPU8) throw new Error('WASM memory not initialized');
             const pointer = wasm._malloc(selectedBytes.length);
             try {
                 wasm.HEAPU8.set(selectedBytes, pointer);
@@ -313,21 +310,24 @@
                 return url;
             }
         }).then(module => {
-            console.log('WASM module object received:', module);
-            console.log('Module type:', typeof module);
-            console.log('Module keys:', Object.keys(module).slice(0, 20));
+            console.log('WASM module received:', module);
+            console.log('Has HEAPU8:', !!module.HEAPU8);
+            console.log('Has ccall:', typeof module.ccall === 'function');
+            console.log('Has _malloc:', typeof module._malloc === 'function');
             
-            if (!module || typeof module.ccall !== 'function') {
-                console.error('Module does not expose ccall interface');
-                showStatus('WASM module loaded but interface is incorrect', 'error');
+            if (!module || typeof module.ccall !== 'function' || !module.HEAPU8) {
+                console.error('Module missing required Emscripten exports');
+                showStatus('WASM module interface incomplete (missing HEAPU8 or ccall)', 'error');
                 return;
             }
             
             wasm = module;
-            console.log('WASM module loaded successfully');
+            console.log('✅ WASM module ready');
             
             try {
                 formats = JSON.parse(wasm.ccall('umacro_formats', 'string', [], []));
+                console.log('Formats loaded:', formats.length);
+                
                 formats.filter(format => format.exportable).forEach(format => {
                     const option = document.createElement('option');
                     option.value = format.id;
