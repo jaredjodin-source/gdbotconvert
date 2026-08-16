@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Convertisseur universel de macros Geometry Dash, directement dans le navigateur.">
-    <title>Universal Macro — Convertisseur Geometry Dash</title>
+    <meta name="description" content="Universal Geometry Dash macro converter, directly in your browser.">
+    <title>Universal Macro — Geometry Dash Converter</title>
     <style>
         :root {
             color-scheme: dark;
@@ -134,52 +134,52 @@
                 Universal Macro
             </div>
             <a class="source" href="https://github.com/jaredjodin-source/https-github.com-new" target="_blank" rel="noreferrer">
-                <span>Code source</span> ↗
+                <span>Source code</span> ↗
             </a>
         </header>
 
         <main>
             <section class="hero">
-                <div class="eyebrow"><span class="pulse"></span> Conversion locale et instantanée</div>
-                <h1>Toutes tes macros.<br><span>Un seul convertisseur.</span></h1>
-                <p class="subtitle">Importe une macro Geometry Dash, détecte automatiquement son format et convertis-la sans envoyer ton fichier sur un serveur.</p>
+                <div class="eyebrow"><span class="pulse"></span> Local and instant conversion</div>
+                <h1>All your macros.<br><span>One converter.</span></h1>
+                <p class="subtitle">Import a Geometry Dash macro, automatically detect its format and convert it without sending your file to a server.</p>
             </section>
 
-            <section class="app" aria-label="Convertisseur de macros">
+            <section class="app" aria-label="Macro converter">
                 <div class="app-head"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="app-title">MACRO CONVERTER</span></div>
                 <div class="app-body">
-                    <div id="dropzone" class="dropzone" role="button" tabindex="0" aria-label="Choisir un fichier de macro">
+                    <div id="dropzone" class="dropzone" role="button" tabindex="0" aria-label="Choose a macro file">
                         <input id="fileInput" type="file">
                         <div>
                             <div class="upload-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5"/><path d="M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"/></svg></div>
-                            <strong>Dépose ta macro ici</strong>
-                            <p>ou <span class="browse">parcours tes fichiers</span></p>
+                            <strong>Drop your macro here</strong>
+                            <p>or <span class="browse">browse your files</span></p>
                         </div>
                     </div>
 
                     <div id="workspace" class="workspace">
                         <div class="card">
-                            <p class="card-label">Fichier détecté</p>
+                            <p class="card-label">Detected file</p>
                             <div class="file-row">
                                 <div class="file-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2h8l4 4v16H6z"/><path d="M14 2v5h5"/></svg></div>
                                 <div class="file-copy"><div id="fileName" class="file-name"></div><div id="fileSize" class="file-sub"></div></div>
-                                <button id="changeFile" class="change" type="button">Changer</button>
+                                <button id="changeFile" class="change" type="button">Change</button>
                             </div>
                             <div class="stats">
                                 <div class="stat"><span>Format</span><strong id="statFormat">—</strong></div>
                                 <div class="stat"><span>Framerate</span><strong id="statFps">—</strong></div>
                                 <div class="stat"><span>Inputs</span><strong id="statInputs">—</strong></div>
-                                <div class="stat"><span>Durée</span><strong id="statDuration">—</strong></div>
+                                <div class="stat"><span>Duration</span><strong id="statDuration">—</strong></div>
                             </div>
                         </div>
 
                         <div class="card">
                             <p class="card-label">Conversion</p>
-                            <div class="field"><label for="formatSelect">Format de sortie</label><select id="formatSelect"></select></div>
-                            <div class="field"><label for="outputName">Nom du fichier</label><input id="outputName" type="text" autocomplete="off"></div>
+                            <div class="field"><label for="formatSelect">Output format</label><select id="formatSelect"></select></div>
+                            <div class="field"><label for="outputName">File name</label><input id="outputName" type="text" autocomplete="off"></div>
                             <button id="convertButton" class="convert" type="button">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M5 19h14"/></svg>
-                                Convertir et télécharger
+                                Convert and download
                             </button>
                             <div id="status" class="status" role="status"></div>
                         </div>
@@ -187,10 +187,10 @@
                 </div>
             </section>
 
-            <div id="formatChips" class="formats" aria-label="Formats pris en charge"></div>
-            <div class="privacy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Tes fichiers restent dans ton navigateur</div>
+            <div id="formatChips" class="formats" aria-label="Supported formats"></div>
+            <div class="privacy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Your files stay in your browser</div>
         </main>
-        <footer>Universal Macro · Convertisseur open source</footer>
+        <footer>Universal Macro · Open source converter</footer>
     </div>
 
     <script src="converter.js"></script>
@@ -213,10 +213,10 @@
 
         const extensionFor = id => (formats.find(format => format.id === id)?.extensions[0] || `.${id}`).replace(/^\./, '');
         const baseName = name => name.replace(/(\.mhr)?\.[^.]+$/i, '');
-        const humanSize = bytes => bytes < 1024 ? `${bytes} o` : bytes < 1048576 ? `${(bytes / 1024).toFixed(1)} Ko` : `${(bytes / 1048576).toFixed(1)} Mo`;
+        const humanSize = bytes => bytes < 1024 ? `${bytes} B` : bytes < 1048576 ? `${(bytes / 1024).toFixed(1)} KB` : `${(bytes / 1048576).toFixed(1)} MB`;
         const showStatus = (message, type) => { elements.status.textContent = message; elements.status.className = `status visible ${type}`; };
         const clearStatus = () => { elements.status.className = 'status'; elements.status.textContent = ''; };
-        const wasmError = () => wasm.ccall('umacro_error', 'string', [], []) || 'Une erreur inconnue est survenue';
+        const wasmError = () => wasm.ccall('umacro_error', 'string', [], []) || 'An unknown error occurred';
 
         async function callWithBytes(name, returnType, extraTypes = [], extraValues = []) {
             const pointer = wasm._malloc(selectedBytes.length);
@@ -243,8 +243,8 @@
             elements.fileName.textContent = file.name;
             elements.fileSize.textContent = humanSize(file.size);
             elements.statFormat.textContent = info.formatName;
-            elements.statFps.textContent = `${Number(info.framerate).toLocaleString('fr-FR')} FPS`;
-            elements.statInputs.textContent = Number(info.inputs).toLocaleString('fr-FR');
+            elements.statFps.textContent = `${Number(info.framerate).toLocaleString('en-US')} FPS`;
+            elements.statInputs.textContent = Number(info.inputs).toLocaleString('en-US');
             elements.statDuration.textContent = `${Number(info.duration).toFixed(2)} s`;
             elements.outputName.value = `${baseName(file.name)}.${extensionFor(elements.formatSelect.value)}`;
             elements.dropzone.hidden = true;
@@ -277,7 +277,7 @@
                 link.download = elements.outputName.value.trim() || `macro.${extensionFor(elements.formatSelect.value)}`;
                 link.click();
                 URL.revokeObjectURL(url);
-                showStatus(`Conversion terminée · ${humanSize(size)}`, 'success');
+                showStatus(`Conversion complete · ${humanSize(size)}`, 'success');
             } catch (error) {
                 showStatus(error.message, 'error');
             } finally {
@@ -292,17 +292,8 @@
                 const option = document.createElement('option');
                 option.value = format.id;
                 option.textContent = `${format.name} (${format.extensions[0]})`;
-                elements.formatSelect.append(option);
+                elements.formatSelect.appendChild(option);
             });
-            const preferred = formats.find(format => format.id === 'gdr2');
-            if (preferred) elements.formatSelect.value = preferred.id;
-            formats.flatMap(format => format.extensions).filter((value, index, array) => array.indexOf(value) === index).forEach(extension => {
-                const chip = document.createElement('span');
-                chip.className = 'chip';
-                chip.textContent = extension;
-                elements.formatChips.append(chip);
-            });
-        }).catch(error => showStatus(`Impossible de charger le convertisseur : ${error.message}`, 'error'));
-    </script>
-</body>
-</html>
+
+            formats.forEach(format => {
+        
