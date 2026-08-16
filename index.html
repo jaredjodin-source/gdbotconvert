@@ -216,9 +216,10 @@
         const humanSize = bytes => bytes < 1024 ? `${bytes} B` : bytes < 1048576 ? `${(bytes / 1024).toFixed(1)} KB` : `${(bytes / 1048576).toFixed(1)} MB`;
         const showStatus = (message, type) => { elements.status.textContent = message; elements.status.className = `status visible ${type}`; };
         const clearStatus = () => { elements.status.className = 'status'; elements.status.textContent = ''; };
-        const wasmError = () => wasm.ccall('umacro_error', 'string', [], []) || 'An unknown error occurred';
+        const wasmError = () => wasm && wasm.ccall('umacro_error', 'string', [], []) || 'An unknown error occurred';
 
         async function callWithBytes(name, returnType, extraTypes = [], extraValues = []) {
+            if (!wasm) throw new Error('WASM module not loaded');
             const pointer = wasm._malloc(selectedBytes.length);
             try {
                 wasm.HEAPU8.set(selectedBytes, pointer);
@@ -229,7 +230,7 @@
         }
 
         async function loadFile(file) {
-            if (!file) return;
+            if (!file || !wasm) return;
             clearStatus();
             selectedFile = file;
             selectedBytes = new Uint8Array(await file.arrayBuffer());
@@ -262,7 +263,7 @@
         elements.formatSelect.addEventListener('change', () => { if (selectedFile) elements.outputName.value = `${baseName(selectedFile.name)}.${extensionFor(elements.formatSelect.value)}`; });
 
         elements.convertButton.addEventListener('click', async () => {
-            if (!selectedFile) return;
+            if (!selectedFile || !wasm) return;
             clearStatus();
             elements.convertButton.disabled = true;
             try {
@@ -285,7 +286,18 @@
             }
         });
 
-        createUniversalMacro({ locateFile: path => `./${path}` }).then(module => {
+        // Initialize WASM module with absolute URL resolution
+        const pageUrl = new URL(window.location.href);
+        const baseUrl = pageUrl.origin + pageUrl.pathname.split('/').slice(0, -1).join('/');
+        
+        createUniversalMacro({ 
+            locateFile: path => {
+                const url = baseUrl + '/' + path;
+                console.log('Loading WASM from:', url);
+                return url;
+            }
+        }).then(module => {
+            console.log('WASM module loaded successfully');
             wasm = module;
             formats = JSON.parse(wasm.ccall('umacro_formats', 'string', [], []));
             formats.filter(format => format.exportable).forEach(format => {
@@ -301,6 +313,9 @@
                 chip.textContent = format.name;
                 elements.formatChips.appendChild(chip);
             });
+        }).catch(error => {
+            console.error('Failed to load WASM module:', error);
+            showStatus('Failed to load converter module: ' + error.message, 'error');
         });
     </script>
 </body>
